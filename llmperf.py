@@ -170,6 +170,7 @@ def add_engines_parser(base_parser, vllm_batch_size = False):
     openai_parser = engine_parser.add_parser("openai", help="OpenAI Engine")
     openai_parser.add_argument("--api_key", type=str, default="API_KEY", help="The OpenAI API Key")
     openai_parser.add_argument("--api_base", type=str, default="http://localhost:8000/v1", help="The OpenAI Server URL")
+    openai_parser.add_argument("--model", type=str, default="meta-llama/Llama-2-7b-chat-hf", help="model to benchmark")
 
     triton_parser = engine_parser.add_parser("triton", help="Triton Engine")
     triton_parser.add_argument("--model", type=str, default="ensemble", help="The model.")

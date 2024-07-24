@@ -1,11 +1,20 @@
-import openai
+from openai import OpenAI
 from timeit import default_timer as timer
 
+# Add these lines at the beginning of the file
+openai_api_key = "EMPTY"
+openai_api_base = "http://localhost:8000/v1"
+
+client = OpenAI(
+    api_key=openai_api_key,
+    base_url=openai_api_base,
+)
+
 def ttft_measurer(prompt, args):
-    model = get_model(args)
+    model = args.model
     def single_request():
         start = timer()
-        completion = openai.Completion.create(
+        completion = client.completions.create(
             model=model,
                         echo=False,
                         prompt=prompt,
@@ -14,16 +23,17 @@ def ttft_measurer(prompt, args):
                         n=1,
                         stream=True,
             )
+        
         for _ in completion:
             pass
         return timer() - start
     return single_request
 
 def tpot_measurer(prompt, args):
-    model = get_model(args)
+    model = args.model
     async def single_request():
         start = timer()
-        completion = openai.Completion.create(
+        completion = client.completions.create(
             model=model,
                         echo=False,
                         prompt=prompt,
@@ -32,6 +42,7 @@ def tpot_measurer(prompt, args):
                         n=1,
                         stream=True,
             )
+
         i = 0
         for _ in completion:
             if i == 0:
@@ -41,9 +52,9 @@ def tpot_measurer(prompt, args):
     return single_request
 
 def rate_throughput_measurer(prompt, args):
-    model = get_model(args)
+    model = args.model
     async def single_request():
-        completion = await openai.Completion.acreate(
+        completion = await client.completions.create(
             model=model,
                         echo=False,
                         prompt=prompt,
@@ -58,9 +69,9 @@ def rate_throughput_measurer(prompt, args):
     return single_request
 
 def sample_rate_throughput_measurer(args):
-    model = get_model(args)
+    model = args.model
     async def single_request(sample):
-        completion = await openai.Completion.acreate(
+        completion = await client.completions.create(
             model=model,
                         echo=False,
                         prompt=sample["prompt"],
@@ -75,9 +86,9 @@ def sample_rate_throughput_measurer(args):
     return single_request
 
 def sample_output_rate_throughput_measurer(args):
-    model = get_model(args)
+    model = args.model
     async def single_request(sample):
-        completion = await openai.Completion.acreate(
+        completion = await client.completions.create(
             model=model,
                         echo=False,
                         prompt=sample["prompt"],
@@ -90,8 +101,3 @@ def sample_output_rate_throughput_measurer(args):
         return completion.usage.completion_tokens
     return single_request
 
-def get_model(args):
-    openai.api_key = args.api_key
-    openai.api_base = args.api_base
-    models = openai.Model.list()
-    return models["data"][0]["id"]
