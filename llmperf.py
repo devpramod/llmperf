@@ -94,6 +94,8 @@ def run_static_batch(args):
     measurer = None
     if args.engine == "vllm":
         measurer = vllm_perf.static_batch_measurer(prompt, args)
+    elif args.engine == "openai":
+        measurer = openai_perf.static_batch_measurer(prompt, args)
     else:
         print(f"Static batch test not implemented for {args.engine}")
         return
@@ -206,6 +208,12 @@ if __name__ == "__main__":
     stb_vllm_parser = stb_engine_parser.add_parser("vllm", help="vLLM Engine")
     stb_vllm_parser.add_argument("--model", type=str, default="", help="The model.")
     stb_vllm_parser.add_argument("--dtype", type=str, default="float16", help="The dtype.")
+
+    # Add OpenAI parser for static batch
+    stb_openai_parser = stb_engine_parser.add_parser("openai", help="OpenAI Engine")
+    stb_openai_parser.add_argument("--api_key", type=str, default="EMPTY", help="The OpenAI API Key")
+    stb_openai_parser.add_argument("--api_base", type=str, default="http://localhost:8000/v1", help="The OpenAI Server URL")
+    stb_openai_parser.add_argument("--model", type=str, default="meta-llama/Llama-2-7b-chat-hf", help="model to benchmark")
 
     rth_parser = test_parser.add_parser("rate_throughput", help="Measure throughput with sending requests at constant rate")
     rth_parser.add_argument("--prompt_file", type=str, help="Path to a file containing the prompt.")

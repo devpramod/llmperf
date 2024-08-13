@@ -101,3 +101,29 @@ def sample_output_rate_throughput_measurer(args):
         return completion.usage.completion_tokens
     return single_request
 
+
+def static_batch_measurer(prompt, args):
+    client = OpenAI(
+        api_key=args.api_key,
+        base_url=args.api_base
+    )
+    
+    def single_request():
+        start = timer()
+        responses = []
+        for _ in range(args.batch_size):
+            response = client.completions.create(
+                model=args.model,
+                prompt=prompt,
+                max_tokens=args.output_tokens,
+                temperature=0.0,
+                stream=False
+            )
+            responses.append(response)
+        
+        end = timer()
+        total_time = end - start
+        total_tokens = sum(len(r.choices[0].text.split()) for r in responses)
+        return total_tokens / total_time  # tokens per second
+    
+    return single_request
